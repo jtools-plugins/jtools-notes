@@ -20,8 +20,15 @@ public class HomeView extends JPanel {
     private final Logger logger;
     private final String locationHash;
     private JTree tree;
+    private static volatile List<Data> globalDatas;
+    private static volatile DefaultTreeModel globalTreeModel;
+    private static volatile DefaultMutableTreeNode globalRoot;
+
+
     private List<Data> datas;
+
     private DefaultTreeModel treeModel;
+
     private DefaultMutableTreeNode root;
 
     public HomeView(String locationHash, NotesView notesView, Logger logger) {
@@ -35,13 +42,7 @@ public class HomeView extends JPanel {
 
     private void initContent() {
         //加载数据
-        this.datas = Config.getInstance().isGlobal() ? DataManager.loadData(System.getProperty("user.home") + "/.jtools/notes/data.json", Data.class) : DataManager.loadData(locationHash);
-        //创建root节点
-        this.root = new DefaultMutableTreeNode();
-        //初始化树
-        initTree(root, datas);
-        //创建树模型
-        this.treeModel = new DefaultTreeModel(root);
+        reload();
         //创建tree
         this.tree = new JTree(treeModel);
         //不显示root节点
@@ -339,10 +340,28 @@ public class HomeView extends JPanel {
     }
 
     public void reload() {
-        this.datas = Config.getInstance().isGlobal() ? DataManager.loadData(System.getProperty("user.home") + "/.jtools/notes/data.json", Data.class) : DataManager.loadData(locationHash);
-        this.root.removeAllChildren();
-        this.initTree(this.root, this.datas);
-        this.treeModel.reload();
-        this.tree.clearSelection();
+        if (Config.getInstance().isGlobal()) {
+            if (globalDatas == null) {
+                globalDatas = DataManager.loadData(System.getProperty("user.home") + "/.jtools/notes/data.json", Data.class);
+                globalRoot = new DefaultMutableTreeNode();
+                globalTreeModel = new DefaultTreeModel(globalRoot);
+            }
+            globalRoot.removeAllChildren();
+            this.initTree(globalRoot, globalDatas);
+            globalTreeModel.reload();
+            root = globalRoot;
+            treeModel = globalTreeModel;
+            datas = globalDatas;
+        } else {
+            datas = DataManager.loadData(locationHash);
+            root = new DefaultMutableTreeNode();
+            this.initTree(root, datas);
+            treeModel = new DefaultTreeModel(root);
+            treeModel.reload();
+        }
+        if(this.tree != null){
+            this.tree.setModel(treeModel);
+            this.tree.clearSelection();
+        }
     }
 }

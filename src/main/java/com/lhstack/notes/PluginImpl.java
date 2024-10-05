@@ -212,6 +212,9 @@ public class PluginImpl implements IPlugin {
                 } else {
                     Config.getInstance().setGlobal(false).store();
                 }
+                if (!viewMap.get(locationHash).isHomeView()) {
+                    viewMap.get(locationHash).switchHomeView();
+                }
                 viewMap.get(locationHash).reload();
             }
 
