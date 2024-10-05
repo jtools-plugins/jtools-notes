@@ -343,5 +343,6 @@ public class HomeView extends JPanel {
         this.root.removeAllChildren();
         this.initTree(this.root, this.datas);
         this.treeModel.reload();
+        this.tree.clearSelection();
     }
 }

@@ -61,19 +61,27 @@ public class ContentView extends JPanel implements DocumentListener, Runnable {
     @Override
     public void insertUpdate(DocumentEvent e) {
         this.data.setText(textEditorPane.getText());
-        DataManager.storeData(datas.get(), locationHash);
+        store();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         this.data.setText(textEditorPane.getText());
-        DataManager.storeData(datas.get(), locationHash);
+        store();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
         this.data.setText(textEditorPane.getText());
-        DataManager.storeData(datas.get(), locationHash);
+        store();
+    }
+
+    public void store() {
+        if (Config.getInstance().isGlobal()) {
+            DataManager.store(datas.get(), System.getProperty("user.home") + "/.jtools/notes/data.json");
+        } else {
+            DataManager.storeData(datas.get(), locationHash);
+        }
     }
 
     @Override
