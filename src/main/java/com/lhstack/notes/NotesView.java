@@ -85,4 +85,11 @@ public class NotesView extends JPanel implements Runnable {
     public void run() {
         this.contentView.run();
     }
+
+    /**
+     * 重新加载数据
+     */
+    public void reload() {
+        homeView.reload();
+    }
 }

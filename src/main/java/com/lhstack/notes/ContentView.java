@@ -1,6 +1,5 @@
 package com.lhstack.notes;
 
-import com.lhstack.notes.entity.Data;
 import com.lhstack.tools.plugins.Logger;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;

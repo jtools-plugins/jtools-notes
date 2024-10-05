@@ -1,4 +1,4 @@
-package com.lhstack.notes.entity;
+package com.lhstack.notes;
 
 import java.util.List;
 import java.util.Objects;

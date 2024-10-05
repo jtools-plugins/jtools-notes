@@ -193,6 +193,37 @@ public class PluginImpl implements IPlugin {
                 return viewMap.get(locationHash).isContentView();
             }
 
+        }, new Action() {
+            @Override
+            public Icon icon() {
+                return Helper.findIcon("icons/global.svg", PluginImpl.class);
+            }
+
+            @Override
+            public String title() {
+                return "是否作用于全局,所有项目共享";
+            }
+
+            @Override
+            public void actionPerformed() {
+                //按钮未选中,则触发
+                if (!isSelected()) {
+                    Config.getInstance().setGlobal(true).store();
+                } else {
+                    Config.getInstance().setGlobal(false).store();
+                }
+                viewMap.get(locationHash).reload();
+            }
+
+            /**
+             * 按钮是否需要选中
+             * @return
+             */
+            @Override
+            public boolean isSelected() {
+                return Config.getInstance().isGlobal();
+            }
+
         });
     }
 }

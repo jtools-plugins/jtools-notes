@@ -1,6 +1,5 @@
 package com.lhstack.notes;
 
-import com.lhstack.notes.entity.Data;
 import com.lhstack.tools.plugins.Helper;
 import com.lhstack.tools.plugins.Logger;
 
@@ -36,7 +35,7 @@ public class HomeView extends JPanel {
 
     private void initContent() {
         //加载数据
-        this.datas = DataManager.loadData(locationHash);
+        this.datas = Config.getInstance().isGlobal() ? DataManager.loadData(System.getProperty("user.home") + "/.jtools/notes/data.json", Data.class) : DataManager.loadData(locationHash);
         //创建root节点
         this.root = new DefaultMutableTreeNode();
         //初始化树
@@ -119,7 +118,7 @@ public class HomeView extends JPanel {
                                 //更新视图
                                 treeModel.insertNodeInto(newNode, parentNode, parentNode.getIndex(newNode));
                                 //持久化数据
-                                DataManager.storeData(datas, locationHash);
+                                store();
                             } catch (Throwable err) {
                                 logger.error("添加节点失败: " + err);
                             }
@@ -159,7 +158,7 @@ public class HomeView extends JPanel {
                                     }
                                     treeModel.reload(parent);
                                     logger.info(datas);
-                                    DataManager.storeData(datas, locationHash);
+                                    store();
                                 } catch (Throwable err) {
                                     logger.error("删除节点错误: " + err);
                                 }
@@ -177,7 +176,7 @@ public class HomeView extends JPanel {
                             }
                             data.setName(name);
                             treeModel.nodeStructureChanged(node);
-                            DataManager.storeData(datas, locationHash);
+                            store();
                         });
                         JMenuItem openContentItem = new JMenuItem("打开内容", Helper.findIcon("icons/open.svg", HomeView.class));
                         openContentItem.addActionListener(event -> {
@@ -211,7 +210,7 @@ public class HomeView extends JPanel {
                                 }
                                 parentDataList.remove((Data) treeNode.getUserObject());
                                 treeModel.reload(parent);
-                                DataManager.storeData(datas, locationHash);
+                                store();
                             });
                             popupMenu.add(removeDirItem);
                         }
@@ -305,8 +304,7 @@ public class HomeView extends JPanel {
                             treeModel.insertNodeInto(node, root, root.getIndex(node));
                         }
                     }
-
-                    DataManager.storeData(datas, locationHash);
+                    store();
                 } catch (Throwable err) {
                     logger.error("添加节点失败: " + err);
                 }
@@ -314,6 +312,14 @@ public class HomeView extends JPanel {
         }));
 
         this.add(panel, BorderLayout.NORTH);
+    }
+
+    private void store() {
+        if (!Config.getInstance().isGlobal()) {
+            DataManager.storeData(datas, locationHash);
+        } else {
+            DataManager.store(datas, System.getProperty("user.home") + "/.jtools/notes/data.json");
+        }
     }
 
     private void collapseAll() {
@@ -330,5 +336,12 @@ public class HomeView extends JPanel {
 
     public List<Data> getDatas() {
         return datas;
+    }
+
+    public void reload() {
+        this.datas = Config.getInstance().isGlobal() ? DataManager.loadData(System.getProperty("user.home") + "/.jtools/notes/data.json", Data.class) : DataManager.loadData(locationHash);
+        this.root.removeAllChildren();
+        this.initTree(this.root, this.datas);
+        this.treeModel.reload();
     }
 }
