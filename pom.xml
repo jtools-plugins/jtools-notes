@@ -37,6 +37,7 @@
             <version>${rsyntaxtextarea.version}</version>
         </dependency>
 
+        <!--  通过JTools插件动态安装  -->
         <dependency>
             <groupId>com.lhstack.plugins.jtools</groupId>
             <artifactId>JTools-Sdk</artifactId>
