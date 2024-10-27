@@ -30,13 +30,6 @@
     </repositories>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.fifesoft</groupId>
-            <artifactId>rsyntaxtextarea</artifactId>
-            <version>${rsyntaxtextarea.version}</version>
-        </dependency>
-
         <!--  通过JTools插件动态安装  -->
 
         <dependency>
