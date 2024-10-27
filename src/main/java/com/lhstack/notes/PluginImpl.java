@@ -50,6 +50,12 @@ public class PluginImpl implements IPlugin {
         loggerMap.put(projectHash, logger);
     }
 
+
+    @Override
+    public boolean support(Integer jToolsVersion) {
+        return jToolsVersion >= 102;
+    }
+
     /**
      * 项目关闭时,清理相关缓存
      *
