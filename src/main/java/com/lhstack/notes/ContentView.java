@@ -1,80 +1,70 @@
 package com.lhstack.notes;
 
+import com.lhstack.tools.plugins.Helper;
 import com.lhstack.tools.plugins.Logger;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.TextEditorPane;
-import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ContentView extends JPanel implements DocumentListener, Runnable {
+public class ContentView extends JPanel implements Runnable {
 
-    private final TextEditorPane textEditorPane;
+    private final JComponent languageTextField;
     private final JLabel title;
     private final Logger logger;
     private final String locationHash;
     private final Supplier<List<Data>> datas;
     private Data data;
 
+    private Runnable disable;
+
+    private Consumer<String> setValueConsumer;
+
+    private boolean isChanged = false;
+
     public ContentView(String locationHash, NotesView notesView, Logger logger, Supplier<List<Data>> datas) {
         this.setLayout(new BorderLayout());
         this.setBorder(null);
+        this.locationHash = locationHash;
         this.logger = logger;
-        this.textEditorPane = initTextEditorPane();
+        this.datas = datas;
+        this.languageTextField = initTextEditorPane();
         this.title = new JLabel();
         this.title.setFont(new Font("", Font.PLAIN, 16));
         this.add(title, BorderLayout.NORTH);
-        RTextScrollPane rTextScrollPane = new RTextScrollPane(this.textEditorPane);
-        rTextScrollPane.setBorder(null);
-        this.add(rTextScrollPane, BorderLayout.CENTER);
-        this.datas = datas;
-        this.locationHash = locationHash;
+        this.add(new JScrollPane(this.languageTextField), BorderLayout.CENTER);
     }
 
-    private TextEditorPane initTextEditorPane() {
-        TextEditorPane pane = new TextEditorPane();
-        pane.setTabSize(2);
-        pane.setLineWrap(true);
-        pane.setHighlightCurrentLine(true);
-        pane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_MARKDOWN);
-        pane.setCodeFoldingEnabled(true);
-        return pane;
+    private JComponent initTextEditorPane() {
+        return Helper.languageTextField(
+                "Markdown",
+                locationHash,
+                setValueConsumer1 -> {
+                    this.setValueConsumer = setValueConsumer1;
+                },
+                run -> {
+                    this.disable = run;
+                },
+                str -> {
+                    if(isChanged){
+                        ContentView.this.data.setText(str);
+                        store();
+                    }
+                });
     }
 
 
     public void onShow(Data data) {
+        isChanged = false;
         this.data = data;
         this.title.setText(data.getName());
         this.title.setHorizontalAlignment(JLabel.CENTER);
-        Document document = this.textEditorPane.getDocument();
-        document.removeDocumentListener(this);
-        this.textEditorPane.setText(data.getText());
-        document.addDocumentListener(this);
+        this.setValueConsumer.accept(data.getText() == null ? "" : data.getText());
+        isChanged = true;
     }
 
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        this.data.setText(textEditorPane.getText());
-        store();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        this.data.setText(textEditorPane.getText());
-        store();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        this.data.setText(textEditorPane.getText());
-        store();
-    }
 
     public void store() {
         if (Config.getInstance().isGlobal()) {
@@ -86,8 +76,6 @@ public class ContentView extends JPanel implements DocumentListener, Runnable {
 
     @Override
     public void run() {
-        this.textEditorPane.resetKeyboardActions();
-        this.textEditorPane.clearParsers();
-        this.textEditorPane.clearMarkAllHighlights();
+        disable.run();
     }
 }
